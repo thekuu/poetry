@@ -1,0 +1,6 @@
+{
+  "name": "The Poet Society",
+  "description": "An elegant poetry platform where users can read poems, publish anonymously, and reply to form continuous poetic conversations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

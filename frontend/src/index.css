@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600&family=Noto+Serif+Ethiopic:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Outfit', sans-serif;
+  --font-serif: 'Lora', 'Noto Serif Ethiopic', serif;
+  --font-amharic: 'Noto Serif Ethiopic', serif;
+}
+
+body {
+  background-color: #FDFBF7;
+  color: #1C1917;
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-serif {
+  font-family: 'Lora', serif;
+}
+
+::selection {
+  background-color: #E6DFD3;
+  color: #1C1917;
+}
+
+/* Beautiful custom scrollbar for textareas */
+textarea::-webkit-scrollbar {
+  width: 8px;
+}
+textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+textarea::-webkit-scrollbar-thumb {
+  background-color: #D1CCC2;
+  border-radius: 0px;
+}
+
+/* Quill Editor Customizations */
+.ql-toolbar.ql-snow {
+  border: none !important;
+  border-bottom: 1px solid #EAE5D9 !important;
+  font-family: 'Outfit', sans-serif !important;
+  padding: 12px 16px !important;
+  background-color: transparent !important;
+}
+
+.ql-container.ql-snow {
+  border: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+}
+
+.ql-editor {
+  min-height: 250px;
+  padding: 24px !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #A39D93 !important;
+  font-style: normal !important;
+  left: 24px !important;
+}
