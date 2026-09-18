@@ -40,7 +40,7 @@ export default function Login() {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-12 bg-white p-8 sm:p-12 rounded-2xl shadow-sm border border-[#F3F0EA]">
+        <div className="w-full max-w-md mx-auto mt-6 sm:mt-12 bg-white p-6 sm:p-12 rounded-2xl shadow-sm border border-[#F3F0EA]">
             <h1 className="text-3xl font-serif mb-8 text-center text-[#2C2C2C] tracking-wide">{t('login')}</h1>
             {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-8 text-sm">{error}</div>}
             

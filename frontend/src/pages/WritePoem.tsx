@@ -52,10 +52,10 @@ export default function WritePoem() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl font-serif text-[#2C2C2C] mb-12 tracking-wide text-center uppercase">{t('writePoem')}</h1>
+        <div className="w-full max-w-2xl mx-auto">
+            <h1 className="text-2xl sm:text-4xl font-serif text-[#2C2C2C] mb-8 sm:mb-12 tracking-wide text-center uppercase break-words">{t('writePoem')}</h1>
             
-            <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 sm:p-12 rounded-2xl shadow-sm border border-[#F3F0EA]">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-white p-5 sm:p-12 rounded-2xl shadow-sm border border-[#F3F0EA] w-full max-w-full overflow-hidden">
                 <div>
                     <label htmlFor="title" className="block text-xs font-semibold tracking-wider uppercase text-[#8B8476] mb-3">{t('title')}</label>
                     <input

@@ -207,16 +207,16 @@ export default function Admin() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 py-6 sm:py-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-[#2C2C2C]">Admin Portal</h1>
-                    <p className="text-[#8C8881] mt-1">Manage content, users, and system settings.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-[#2C2C2C] break-words">Admin Portal</h1>
+                    <p className="text-[#8C8881] mt-1 text-sm sm:text-base">Manage content, users, and system settings.</p>
                 </div>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex space-x-1 border-b border-[#E5E1D8] mb-8 overflow-x-auto">
+            <div className="flex space-x-1 border-b border-[#E5E1D8] mb-8 overflow-x-auto max-w-full pb-1">
                 <button
                     onClick={() => setActiveTab('content')}
                     className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-colors whitespace-nowrap ${
@@ -258,9 +258,9 @@ export default function Admin() {
                 {/* CONTENT TAB */}
                 {activeTab === 'content' && (
                     <>
-                        <div className="bg-gradient-to-r from-[#FFF9E6] to-white p-6 sm:p-8 rounded-3xl border border-[#FFEAB3] shadow-sm relative overflow-hidden">
+                        <div className="bg-gradient-to-r from-[#FFF9E6] to-white p-4 sm:p-8 rounded-3xl border border-[#FFEAB3] shadow-sm relative overflow-hidden w-full max-w-full">
                             <Sparkles className="absolute -top-4 -right-4 w-24 h-24 text-[#FFEAB3] opacity-50" />
-                            <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+                            <h2 className="text-lg sm:text-xl font-bold mb-2 flex items-center gap-2">
                                 <Download className="w-5 h-5 text-[#B28200]" />
                                 ከቴሌግራም አምጣ (Scrape from Telegram)
                             </h2>
@@ -274,7 +274,7 @@ export default function Admin() {
                                     value={scrapeUrl}
                                     onChange={(e) => setScrapeUrl(e.target.value)}
                                     placeholder="https://t.me/..."
-                                    className="flex-1 px-4 py-3 bg-white border border-[#E5E1D8] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#B28200]/20"
+                                    className="flex-1 px-4 py-3 bg-white border border-[#E5E1D8] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#B28200]/20 min-w-0"
                                     required
                                 />
                                 <button
@@ -333,16 +333,16 @@ export default function Admin() {
                                 
                                 <div className="grid gap-6">
                                     {drafts.map(draft => (
-                                        <div key={draft.id} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E5E1D8] shadow-sm relative">
+                                        <div key={draft.id} className="bg-white p-4 sm:p-8 rounded-3xl border border-[#E5E1D8] shadow-sm relative w-full max-w-full overflow-hidden">
                                             <button 
                                                 onClick={() => removeDraft(draft.id)}
-                                                className="absolute top-6 right-6 p-2 text-[#8C8881] hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 text-[#8C8881] hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                                                 title="Discard Draft"
                                             >
                                                 <Trash2 className="w-5 h-5" />
                                             </button>
 
-                                            <div className="space-y-6 pr-12">
+                                            <div className="space-y-6 pr-10 sm:pr-12 w-full max-w-full">
                                                 <div>
                                                     <label className="block text-sm font-medium text-[#5C5955] mb-2">ርዕስ (Title)</label>
                                                     <input

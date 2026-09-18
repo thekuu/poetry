@@ -116,8 +116,8 @@ export default function PoemDetail() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-2 sm:px-0">
-            <article className="bg-white p-4 sm:p-16 rounded-2xl shadow-sm border border-[#F3F0EA] relative">
+        <div className="w-full max-w-4xl mx-auto px-0 sm:px-0">
+            <article className="bg-white p-4 sm:p-16 rounded-2xl shadow-sm border border-[#F3F0EA] relative w-full max-w-full overflow-hidden">
                 {/* Original Poem */}
                 {isEditing ? (
                     <div className="mb-16">
@@ -125,7 +125,7 @@ export default function PoemDetail() {
                             type="text"
                             value={editTitle}
                             onChange={(e) => setEditTitle(e.target.value)}
-                            className="w-full text-center text-3xl sm:text-5xl font-serif text-[#2C2C2C] tracking-wide mb-8 bg-transparent border-b border-[#D9D1C7] focus:outline-none focus:border-[#8B7355] px-2 py-1"
+                            className="w-full text-center text-2xl sm:text-5xl font-serif text-[#2C2C2C] tracking-wide mb-8 bg-transparent border-b border-[#D9D1C7] focus:outline-none focus:border-[#8B7355] px-2 py-1 break-words"
                             placeholder="Poem Title"
                         />
                         <div className="bg-[#FAF8F5] border border-[#EAE5D9] rounded-xl overflow-hidden focus-within:border-[#8B7355] focus-within:ring-1 focus-within:ring-[#8B7355] transition-all mb-6">
@@ -134,14 +134,14 @@ export default function PoemDetail() {
                                     theme="snow"
                                     value={editContent}
                                     onChange={setEditContent}
-                                    className="poem-editor text-xl text-[#5C564D] leading-[2.2]"
+                                    className="poem-editor text-lg sm:text-xl text-[#5C564D] leading-[2.2]"
                                 />
                             ) : (
                                 <textarea
                                     value={editContent}
                                     onChange={(e) => setEditContent(e.target.value)}
                                     rows={12}
-                                    className="w-full bg-transparent px-6 py-4 text-xl text-[#5C564D] leading-[2.2] focus:outline-none resize-y whitespace-pre-wrap"
+                                    className="w-full bg-transparent px-4 sm:px-6 py-4 text-lg sm:text-xl text-[#5C564D] leading-[2.2] focus:outline-none resize-y whitespace-pre-wrap break-words"
                                 />
                             )}
                         </div>
@@ -162,24 +162,24 @@ export default function PoemDetail() {
                         </div>
                     </div>
                 ) : (
-                    <div className="text-center mb-16 flex flex-col items-center">
-                        <Feather className="w-5 h-5 text-[#8B7355] mb-8 stroke-[1.5]" />
-                        <h1 className="text-3xl sm:text-5xl font-serif text-[#2C2C2C] tracking-wide mb-8">{poem.title}</h1>
+                    <div className="text-center mb-12 sm:mb-16 flex flex-col items-center">
+                        <Feather className="w-5 h-5 text-[#8B7355] mb-6 sm:mb-8 stroke-[1.5]" />
+                        <h1 className="text-2xl sm:text-5xl font-serif text-[#2C2C2C] tracking-wide mb-6 sm:mb-8 break-words max-w-full px-2">{poem.title}</h1>
                         <div className="w-12 h-px bg-[#D9D1C7]"></div>
                     </div>
                 )}
                 
                 {!isEditing && (
-                    <div className="flex justify-center w-full mb-4 relative group">
+                    <div className="flex justify-center w-full max-w-full overflow-hidden mb-4 relative group">
                     {poem.type === 'prompt' ? (
-                        <div className="max-w-lg w-full">
+                        <div className="max-w-lg w-full max-w-full overflow-hidden">
                             <div 
-                                className="poem-content text-xl sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left"
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words max-w-full"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(poem.content) }}
                             />
                             
-                            <div className="mt-2 flex flex-row items-center justify-end gap-3">
-                                <p className="font-serif italic text-[#8B8476] text-sm sm:text-base">— {poem.authorName || t('unknownAuthorWithParen')}</p>
+                            <div className="mt-4 flex flex-row items-center justify-end gap-3 flex-wrap">
+                                <p className="font-serif italic text-[#8B8476] text-sm sm:text-base break-words">— {poem.authorName || t('unknownAuthorWithParen')}</p>
                                 <div className="flex items-center justify-end gap-3">
                                     <p className="text-[10px] text-[#A39D93] font-sans tracking-widest uppercase">{new Date(poem.createdAt).toLocaleDateString(language === 'am' ? 'am-ET' : 'en-US')}</p>
                                     {poem.sourceUrl && (
@@ -214,15 +214,15 @@ export default function PoemDetail() {
                             </div>
                         </div>
                     ) : (
-                        <div className="max-w-lg w-full">
+                        <div className="max-w-lg w-full max-w-full overflow-hidden">
                             <div 
-                                className="poem-content text-xl sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left"
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words max-w-full"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(poem.content) }}
                             />
                             
-                            <div className="mt-16 pt-8 border-t border-[#F3F0EA] flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                            <div className="mt-12 sm:mt-16 pt-8 border-t border-[#F3F0EA] flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                                 <div>
-                                    <p className="font-serif italic text-[#8B8476] text-xl">— {poem.authorName || t('unknownAuthorWithParen')}</p>
+                                    <p className="font-serif italic text-[#8B8476] text-lg sm:text-xl break-words">— {poem.authorName || t('unknownAuthorWithParen')}</p>
                                     <p className="text-xs text-[#A39D93] mt-3 font-sans tracking-widest uppercase">{new Date(poem.createdAt).toLocaleDateString(language === 'am' ? 'am-ET' : 'en-US')}</p>
                                     
                                     {poem.sourceUrl && (
@@ -265,17 +265,17 @@ export default function PoemDetail() {
                 {/* Conversation Thread / Replies - Only show for prompt type */}
                 {poem.type === 'prompt' && replies && replies.length > 0 && (
                     <div className="mt-4 pt-4 flex flex-col w-full relative before:absolute before:left-1/2 before:top-0 before:-translate-x-1/2 before:w-px before:h-4 before:bg-[#EAE5D9]">
-                        <div className="space-y-6">
+                        <div className="space-y-6 w-full max-w-full">
                             {replies.map((reply) => (
                                 <div key={reply.id} className="w-full flex justify-center relative group">
-                                    <div className="max-w-lg w-full">
+                                    <div className="max-w-lg w-full max-w-full overflow-hidden">
                                         <div 
-                                            className="poem-content text-xl sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left"
+                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words max-w-full"
                                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(reply.content) }}
                                         />
                                         
-                                        <div className="mt-2 flex flex-row items-center justify-end gap-3">
-                                            <p className="font-serif italic text-[#8B8476] text-sm sm:text-base">— {reply.authorName || t('unknownAuthor')}</p>
+                                        <div className="mt-2 flex flex-row items-center justify-end gap-3 flex-wrap">
+                                            <p className="font-serif italic text-[#8B8476] text-sm sm:text-base break-words">— {reply.authorName || t('unknownAuthor')}</p>
                                             <p className="text-[10px] text-[#A39D93] font-sans tracking-widest uppercase">{new Date(reply.createdAt).toLocaleDateString(language === 'am' ? 'am-ET' : 'en-US')}</p>
                                             {user?.role === 'admin' && (
                                                 <button
@@ -296,7 +296,7 @@ export default function PoemDetail() {
 
                 {/* Reply Form - Only show for prompt type */}
                 {poem.type === 'prompt' && (
-                    <div className="mt-12 pt-12 flex flex-col items-center relative border-t border-[#EAE5D9]">
+                    <div className="mt-10 sm:mt-12 pt-10 sm:pt-12 flex flex-col items-center relative border-t border-[#EAE5D9] w-full max-w-full">
                         <div className="absolute -top-8 h-8 w-px bg-[#EAE5D9]"></div>
                         <div className="absolute -top-4 bg-white px-4 text-[#8B7355]">
                             <Feather className="w-5 h-5 stroke-[1.5]" />
@@ -308,23 +308,23 @@ export default function PoemDetail() {
                                     value={replyContent}
                                     onChange={setReplyContent}
                                     placeholder={t('continuePoem')}
-                                    className="poem-editor text-xl text-[#5C564D] leading-[2.2]"
+                                    className="poem-editor text-base sm:text-xl text-[#5C564D] leading-[2.2]"
                                 />
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-4 items-center">
+                            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full">
                                 {!user && (
                                     <input
                                         type="text"
                                         value={replyAuthor}
                                         onChange={(e) => setReplyAuthor(e.target.value)}
                                         placeholder={t('namePlaceholder')}
-                                        className="flex-1 w-full px-6 py-3.5 bg-[#FAF8F5] border border-[#EAE5D9] rounded-full focus:outline-none focus:border-[#8B7355] focus:ring-1 focus:ring-[#8B7355] transition-all text-[#5C564D] placeholder:text-[#A39D93]"
+                                        className="w-full sm:flex-1 px-5 py-3.5 bg-[#FAF8F5] border border-[#EAE5D9] rounded-full focus:outline-none focus:border-[#8B7355] focus:ring-1 focus:ring-[#8B7355] transition-all text-[#5C564D] placeholder:text-[#A39D93]"
                                     />
                                 )}
                                 <button
                                     type="submit"
                                     disabled={replyMutation.isPending || isReplyEmpty}
-                                    className="w-full sm:w-auto px-8 py-3.5 bg-[#2C2C2C] text-white rounded-full font-medium hover:bg-[#8B7355] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                                    className="w-full sm:w-auto px-8 py-3.5 bg-[#2C2C2C] text-white rounded-full font-medium hover:bg-[#8B7355] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 whitespace-nowrap"
                                 >
                                     <PenLine className="w-4 h-4" />
                                     <span>{replyMutation.isPending ? t('sending') : t('sendReply')}</span>
