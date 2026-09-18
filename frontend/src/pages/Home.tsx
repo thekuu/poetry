@@ -90,7 +90,7 @@ export default function Home() {
                                 </div>
                                 <div className="w-full max-w-lg mx-auto min-w-0 overflow-hidden">
                                     <div 
-                                        className="poem-content text-[#5C564D] line-clamp-4 whitespace-pre-wrap leading-[2.2] mb-8 sm:mb-12 text-base sm:text-xl text-left w-full break-words min-w-0"
+                                        className="poem-content text-[#5C564D] line-clamp-4 whitespace-pre-wrap leading-[2.2] mb-8 sm:mb-12 text-base sm:text-xl text-left w-full break-words break-all min-w-0"
                                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                                     />
                                 </div>

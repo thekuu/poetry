@@ -360,7 +360,7 @@ export default function Admin() {
                                                         value={draft.content}
                                                         onChange={(e) => updateDraft(draft.id, 'content', e.target.value)}
                                                         rows={8}
-                                                        className="w-full px-4 py-4 bg-white border border-[#E5E1D8] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#2D2B2A]/20 resize-y whitespace-pre-wrap leading-relaxed"
+                                                        className="w-full px-4 py-4 bg-white border border-[#E5E1D8] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#2D2B2A]/20 resize-y whitespace-pre-wrap leading-relaxed break-all"
                                                         required
                                                     />
                                                 </div>

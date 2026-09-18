@@ -175,7 +175,7 @@ export default function PoemDetail() {
                     {poem.type === 'prompt' ? (
                         <div className="w-full min-w-0 overflow-hidden">
                             <div 
-                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full min-w-0"
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full min-w-0"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                             />
                             
@@ -217,7 +217,7 @@ export default function PoemDetail() {
                     ) : (
                         <div className="w-full min-w-0 overflow-hidden">
                             <div 
-                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full min-w-0"
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full min-w-0"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                             />
                             
@@ -271,7 +271,7 @@ export default function PoemDetail() {
                                 <div key={reply.id} className="w-full max-w-lg mx-auto min-w-0 relative group">
                                     <div className="w-full min-w-0 overflow-hidden">
                                         <div 
-                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full min-w-0"
+                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full min-w-0"
                                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(reply.content)) }}
                                         />
                                         

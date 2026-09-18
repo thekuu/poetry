@@ -186,7 +186,7 @@ export default function Layout() {
                 )}
             </header>
             
-            <main className="w-full max-w-3xl mx-auto px-3 sm:px-4 py-8 sm:py-12 min-w-0">
+            <main className="w-full max-w-3xl mx-auto px-3 sm:px-4 py-8 sm:py-12 min-w-0 max-w-full overflow-x-hidden">
                 <Outlet />
             </main>
             

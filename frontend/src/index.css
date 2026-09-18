@@ -45,7 +45,7 @@ body {
 .ql-editor,
 .ql-editor * {
   white-space: pre-wrap !important;
-  word-break: break-word !important;
+  word-break: break-all !important;
   overflow-wrap: anywhere !important;
   word-wrap: break-word !important;
   line-break: anywhere !important;
