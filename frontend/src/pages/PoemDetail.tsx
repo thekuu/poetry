@@ -117,7 +117,7 @@ export default function PoemDetail() {
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto px-0 sm:px-0">
+        <div className="w-full max-w-4xl mx-auto px-0 sm:px-0 min-w-0 max-w-full overflow-hidden">
             <article className="bg-white p-4 sm:p-16 rounded-2xl shadow-sm border border-[#F3F0EA] relative w-full max-w-full overflow-hidden">
                 {/* Original Poem */}
                 {isEditing ? (
@@ -175,7 +175,7 @@ export default function PoemDetail() {
                     {poem.type === 'prompt' ? (
                         <div className="w-full min-w-0 overflow-hidden">
                             <div 
-                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full min-w-0"
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full max-w-full min-w-0 overflow-hidden"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                             />
                             
@@ -217,7 +217,7 @@ export default function PoemDetail() {
                     ) : (
                         <div className="w-full min-w-0 overflow-hidden">
                             <div 
-                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full min-w-0"
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full max-w-full min-w-0 overflow-hidden"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                             />
                             
@@ -271,7 +271,7 @@ export default function PoemDetail() {
                                 <div key={reply.id} className="w-full max-w-lg mx-auto min-w-0 relative group">
                                     <div className="w-full min-w-0 overflow-hidden">
                                         <div 
-                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full min-w-0"
+                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full max-w-full min-w-0 overflow-hidden"
                                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(reply.content)) }}
                                         />
                                         

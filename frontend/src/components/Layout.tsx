@@ -46,7 +46,7 @@ export default function Layout() {
     };
 
     return (
-        <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#FAF8F5] text-[#2C2C2C] font-sans selection:bg-[#EAE5D9] selection:text-[#2C2C2C]">
+        <div className="min-h-screen w-full max-w-full overflow-x-clip overflow-x-hidden bg-[#FAF8F5] text-[#2C2C2C] font-sans selection:bg-[#EAE5D9] selection:text-[#2C2C2C]">
             <header className="sticky top-0 z-10 w-full max-w-full bg-[#FAF8F5]/90 backdrop-blur-sm border-b border-[#EAE5D9]">
                 <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between gap-2 relative">
                     <Link to="/" onClick={closeMobileMenu} className={`text-lg sm:text-2xl font-normal tracking-wide text-[#2C2C2C] truncate min-w-0 ${language === 'am' ? 'font-amharic font-medium' : 'font-serif'}`}>
@@ -186,7 +186,7 @@ export default function Layout() {
                 )}
             </header>
             
-            <main className="w-full max-w-3xl mx-auto px-3 sm:px-4 py-8 sm:py-12 min-w-0 max-w-full overflow-x-hidden">
+            <main className="w-full max-w-3xl mx-auto px-3 sm:px-4 py-8 sm:py-12 min-w-0 max-w-full overflow-x-clip overflow-x-hidden">
                 <Outlet />
             </main>
             
