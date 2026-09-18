@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
+import { formatPoemContent } from '../utils/text';
 import { poemsApi, repliesApi } from '../services/api';
 import { getAuthorToken } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
@@ -170,12 +171,12 @@ export default function PoemDetail() {
                 )}
                 
                 {!isEditing && (
-                    <div className="flex justify-center w-full max-w-full overflow-hidden mb-4 relative group">
+                    <div className="w-full max-w-lg mx-auto min-w-0 mb-4 relative group">
                     {poem.type === 'prompt' ? (
-                        <div className="max-w-lg w-full max-w-full overflow-hidden">
+                        <div className="w-full min-w-0 overflow-hidden">
                             <div 
-                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words max-w-full"
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(poem.content) }}
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full min-w-0"
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                             />
                             
                             <div className="mt-4 flex flex-row items-center justify-end gap-3 flex-wrap">
@@ -214,10 +215,10 @@ export default function PoemDetail() {
                             </div>
                         </div>
                     ) : (
-                        <div className="max-w-lg w-full max-w-full overflow-hidden">
+                        <div className="w-full min-w-0 overflow-hidden">
                             <div 
-                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words max-w-full"
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(poem.content) }}
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full min-w-0"
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                             />
                             
                             <div className="mt-12 sm:mt-16 pt-8 border-t border-[#F3F0EA] flex flex-col sm:flex-row sm:items-end justify-between gap-6">
@@ -267,11 +268,11 @@ export default function PoemDetail() {
                     <div className="mt-4 pt-4 flex flex-col w-full relative before:absolute before:left-1/2 before:top-0 before:-translate-x-1/2 before:w-px before:h-4 before:bg-[#EAE5D9]">
                         <div className="space-y-6 w-full max-w-full">
                             {replies.map((reply) => (
-                                <div key={reply.id} className="w-full flex justify-center relative group">
-                                    <div className="max-w-lg w-full max-w-full overflow-hidden">
+                                <div key={reply.id} className="w-full max-w-lg mx-auto min-w-0 relative group">
+                                    <div className="w-full min-w-0 overflow-hidden">
                                         <div 
-                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words max-w-full"
-                                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(reply.content) }}
+                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full min-w-0"
+                                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(reply.content)) }}
                                         />
                                         
                                         <div className="mt-2 flex flex-row items-center justify-end gap-3 flex-wrap">

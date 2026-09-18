@@ -3,6 +3,7 @@ import { poemsApi } from '../services/api';
 import { Link, useSearchParams } from 'react-router-dom';
 import { MessageCircle, Sparkles, Feather } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import { formatPoemContent } from '../utils/text';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Home() {
@@ -87,10 +88,10 @@ export default function Home() {
                                     <h3 className="text-2xl sm:text-3xl font-serif text-[#2C2C2C] mb-4 sm:mb-6 transition-colors break-words max-w-full">{poem.title}</h3>
                                     <div className="w-12 h-px bg-[#EAE5D9] mb-6 sm:mb-10 group-hover:bg-[#8B7355] transition-colors duration-500"></div>
                                 </div>
-                                <div className="flex justify-center w-full max-w-full overflow-hidden">
+                                <div className="w-full max-w-lg mx-auto min-w-0 overflow-hidden">
                                     <div 
-                                        className="poem-content text-[#5C564D] line-clamp-4 whitespace-pre-wrap leading-[2.2] mb-8 sm:mb-12 text-base sm:text-xl text-left max-w-lg w-full break-words"
-                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(poem.content) }}
+                                        className="poem-content text-[#5C564D] line-clamp-4 whitespace-pre-wrap leading-[2.2] mb-8 sm:mb-12 text-base sm:text-xl text-left w-full break-words min-w-0"
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                                     />
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-[#A39D93] pt-6 sm:pt-8 border-t border-[#F3F0EA] gap-3 sm:gap-4">
