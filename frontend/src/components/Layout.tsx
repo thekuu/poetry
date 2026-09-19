@@ -46,14 +46,14 @@ export default function Layout() {
     };
 
     return (
-        <div className="min-h-screen w-full max-w-full overflow-x-clip overflow-x-hidden bg-[#FAF8F5] text-[#2C2C2C] font-sans selection:bg-[#EAE5D9] selection:text-[#2C2C2C]">
-            <header className="sticky top-0 z-10 w-full max-w-full bg-[#FAF8F5]/90 backdrop-blur-sm border-b border-[#EAE5D9]">
-                <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between gap-2 relative">
-                    <Link to="/" onClick={closeMobileMenu} className={`text-lg sm:text-2xl font-normal tracking-wide text-[#2C2C2C] truncate min-w-0 ${language === 'am' ? 'font-amharic font-medium' : 'font-serif'}`}>
+        <div className="min-h-screen w-full max-w-full overflow-x-clip overflow-x-hidden bg-[#FAF8F5] text-[#2C2C2C] font-sans selection:bg-[#EAE5D9] selection:text-[#2C2C2C] touch-pan-y">
+            <header className="sticky top-0 z-10 w-full max-w-full bg-[#FAF8F5]/90 backdrop-blur-sm border-b border-[#EAE5D9] overflow-x-hidden">
+                <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between gap-2 relative w-full min-w-0">
+                    <Link to="/" onClick={closeMobileMenu} className={`text-base sm:text-2xl font-normal tracking-wide text-[#2C2C2C] truncate min-w-0 shrink ${language === 'am' ? 'font-amharic font-medium' : 'font-serif'}`}>
                         {t('appTitle')}
                     </Link>
 
-                    <nav className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium tracking-wide">
+                    <nav className="flex items-center gap-2 sm:gap-6 text-xs sm:text-sm font-medium tracking-wide shrink-0">
                         <div className="hidden md:flex items-center gap-6">
                             <form onSubmit={handleSearch} className="relative">
                                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#A39D93]" />
@@ -129,7 +129,7 @@ export default function Layout() {
 
                 {/* Mobile Menu Dropdown */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden absolute top-full left-0 w-full bg-[#FAF8F5] border-b border-[#EAE5D9] shadow-lg py-6 px-4 flex flex-col gap-6 font-medium">
+                    <div className="md:hidden absolute top-full left-0 right-0 w-full max-w-full bg-[#FAF8F5] border-b border-[#EAE5D9] shadow-lg py-6 px-4 flex flex-col gap-6 font-medium overflow-hidden box-border">
                         <form onSubmit={(e) => { handleSearch(e); closeMobileMenu(); }} className="relative w-full">
                             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#A39D93]" />
                             <input 
@@ -190,7 +190,7 @@ export default function Layout() {
                 <Outlet />
             </main>
             
-            <footer className="w-full max-w-3xl mx-auto px-4 py-12 sm:py-16 border-t border-[#EAE5D9] text-center text-[#A39D93] text-sm mt-12 sm:mt-16 font-serif italic">
+            <footer className="w-full max-w-3xl mx-auto px-4 py-12 sm:py-16 border-t border-[#EAE5D9] text-center text-[#A39D93] text-sm mt-12 sm:mt-16 font-serif italic min-w-0 max-w-full overflow-hidden">
                 <p>The Poet Society</p>
                 <p className="mt-2 font-sans text-xs">A digital poetry community where readers can converse with poems.</p>
             </footer>

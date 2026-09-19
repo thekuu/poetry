@@ -7,32 +7,45 @@
   --font-amharic: 'Noto Serif Ethiopic', serif;
 }
 
-html, body {
-  overflow-x: clip !important;
+html {
   overflow-x: hidden !important;
+  overflow-x: clip !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0;
+  padding: 0;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-x: none !important;
+  touch-action: pan-y !important;
+}
+
+body {
+  overflow-x: hidden !important;
+  overflow-x: clip !important;
   max-width: 100% !important;
   width: 100% !important;
   margin: 0;
   padding: 0;
   position: relative;
   -webkit-text-size-adjust: 100%;
-}
-
-#root {
-  overflow-x: clip !important;
-  overflow-x: hidden !important;
-  max-width: 100% !important;
-  width: 100% !important;
-  min-height: 100vh;
-  position: relative;
-}
-
-body {
+  overscroll-behavior-x: none !important;
+  touch-action: pan-y !important;
   background-color: #FDFBF7;
   color: #1C1917;
   font-family: 'Outfit', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  overflow-x: hidden !important;
+  overflow-x: clip !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: 100vh;
+  position: relative;
+  overscroll-behavior-x: none !important;
+  touch-action: pan-y !important;
 }
 
 /* Ensure poetry and text wraps cleanly without causing horizontal scrolling */
@@ -60,10 +73,24 @@ body {
   box-sizing: border-box !important;
 }
 
+.poem-content {
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.line-clamp-4 {
+  overflow: hidden !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
 .poem-content p {
   display: block;
   width: 100% !important;
   max-width: 100% !important;
+  min-width: 0 !important;
   margin: 0;
   padding: 0;
 }

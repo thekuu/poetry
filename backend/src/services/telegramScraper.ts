@@ -87,26 +87,53 @@ export async function scrapeAndParsePoems(url: string) {
     - Skip any texts that do not look like poems (e.g., pure announcements, links, UI text). Do not include them in the array.
     `;
 
-    const aiResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: Type.ARRAY,
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        title: { type: Type.STRING },
-                        content: { type: Type.STRING },
-                        authorName: { type: Type.STRING },
-                        category: { type: Type.STRING }
-                    },
-                    required: ["title", "content", "authorName", "category"]
+    const selectedModel = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+
+    let aiResponse;
+    try {
+        aiResponse = await ai.models.generateContent({
+            model: selectedModel,
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            title: { type: Type.STRING },
+                            content: { type: Type.STRING },
+                            authorName: { type: Type.STRING },
+                            category: { type: Type.STRING }
+                        },
+                        required: ["title", "content", "authorName", "category"]
+                    }
                 }
             }
-        }
-    });
+        });
+    } catch (primaryErr) {
+        console.warn(`Primary model ${selectedModel} failed, trying fallback gemini-3.8-flash:`, primaryErr);
+        aiResponse = await ai.models.generateContent({
+            model: 'gemini-3.8-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            title: { type: Type.STRING },
+                            content: { type: Type.STRING },
+                            authorName: { type: Type.STRING },
+                            category: { type: Type.STRING }
+                        },
+                        required: ["title", "content", "authorName", "category"]
+                    }
+                }
+            }
+        });
+    }
 
     if (!aiResponse.text) {
         throw new Error("Failed to generate content from Gemini");
