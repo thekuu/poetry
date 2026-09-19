@@ -186,11 +186,11 @@ export default function Layout() {
                 )}
             </header>
             
-            <main className="w-full max-w-3xl mx-auto px-3 sm:px-4 py-8 sm:py-12 min-w-0 max-w-full overflow-x-clip overflow-x-hidden">
+            <main className="w-full max-w-3xl mx-auto px-4 py-8 sm:py-12">
                 <Outlet />
             </main>
             
-            <footer className="w-full max-w-3xl mx-auto px-4 py-12 sm:py-16 border-t border-[#EAE5D9] text-center text-[#A39D93] text-sm mt-12 sm:mt-16 font-serif italic min-w-0 max-w-full overflow-hidden">
+            <footer className="w-full max-w-3xl mx-auto px-4 py-12 sm:py-16 border-t border-[#EAE5D9] text-center text-[#A39D93] text-sm mt-12 sm:mt-16 font-serif italic">
                 <p>The Poet Society</p>
                 <p className="mt-2 font-sans text-xs">A digital poetry community where readers can converse with poems.</p>
             </footer>

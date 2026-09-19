@@ -117,8 +117,8 @@ export default function PoemDetail() {
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto px-0 sm:px-0 min-w-0 max-w-full overflow-hidden">
-            <article className="bg-white p-4 sm:p-16 rounded-2xl shadow-sm border border-[#F3F0EA] relative w-full max-w-full overflow-hidden">
+        <div className="space-y-12 sm:space-y-16">
+            <article className="bg-white p-6 sm:p-16 rounded-2xl shadow-sm border border-[#F3F0EA] relative">
                 {/* Original Poem */}
                 {isEditing ? (
                     <div className="mb-16">
