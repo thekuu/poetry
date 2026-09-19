@@ -3,8 +3,8 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { poemsApi, adminApi, categoriesApi } from '../services/api';
 import { getAuthorToken } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { RefreshCw, Download, Sparkles, Trash2, Send, X, UserPlus, Shield, Users, LayoutDashboard, Settings } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { RefreshCw, Download, Sparkles, Trash2, Send, X, UserPlus, Shield, Users, LayoutDashboard, Settings, CheckCircle, AlertCircle, Info, Search, ExternalLink, BookOpen } from 'lucide-react';
 
 type DraftPoem = {
     id: string;
@@ -24,6 +24,19 @@ export default function Admin() {
 
     const [scrapeUrl, setScrapeUrl] = useState('');
     const [drafts, setDrafts] = useState<DraftPoem[]>([]);
+    const [previewDraftIds, setPreviewDraftIds] = useState<Record<string, boolean>>({});
+    const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+    const [publishedSearchQuery, setPublishedSearchQuery] = useState('');
+    const [deletingPoemId, setDeletingPoemId] = useState<string | null>(null);
+    const [roleConfirmTarget, setRoleConfirmTarget] = useState<{ id: string, newRole: string, username: string } | null>(null);
+
+    const notify = (type: 'success' | 'error' | 'info', message: string) => {
+        setNotification({ type, message });
+    };
+
+    const toggleDraftPreview = (id: string) => {
+        setPreviewDraftIds(prev => ({ ...prev, [id]: !prev[id] }));
+    };
     
     // Auth redirect
     useEffect(() => {
@@ -55,19 +68,24 @@ export default function Admin() {
     const scrapeMutation = useMutation({
         mutationFn: () => adminApi.scrapeTelegram(scrapeUrl),
         onSuccess: (data) => {
+            if (!data || data.length === 0) {
+                notify('info', "ምንም ግጥሞች አልተገኙም (No poems found in recent messages from this channel)");
+                return;
+            }
             const newDrafts = data.map((d: any) => ({
                 id: Math.random().toString(36).substring(2, 9),
                 title: d.title || '',
                 content: d.content || '',
                 authorName: d.authorName || '',
                 category: d.category || '',
-                sourceUrl: scrapeUrl
+                sourceUrl: d.sourceUrl || scrapeUrl
             }));
             setDrafts((prev: DraftPoem[]) => [...newDrafts, ...prev]);
+            notify('success', `በተሳካ ሁኔታ ${data.length} ግጥሞች ተገኝተዋል! (Successfully fetched ${data.length} poems!) ከታች ረቂቆችን ይመልከቱ።`);
             setScrapeUrl('');
         },
         onError: (err: any) => {
-            alert("Scrape failed: " + err.message);
+            notify('error', "ስህተት ተከስቷል (Scrape failed): " + err.message);
         }
     });
 
@@ -90,9 +108,10 @@ export default function Admin() {
         mutationFn: ({ id, role }: { id: string, role: string }) => adminApi.updateUserRole(id, role),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+            notify('success', 'User role updated successfully');
         },
         onError: (err: any) => {
-            alert("Failed to update role: " + err.message);
+            notify('error', "Failed to update role: " + err.message);
         }
     });
 
@@ -101,13 +120,13 @@ export default function Admin() {
     const createAdminMutation = useMutation({
         mutationFn: (data: any) => adminApi.createAdmin(data),
         onSuccess: () => {
-            alert('Admin created successfully!');
+            notify('success', 'Admin created successfully!');
             setNewAdminUsername('');
             setNewAdminPassword('');
             queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
         },
         onError: (err: any) => {
-            alert('Failed to create admin: ' + (err.message || 'Unknown error'));
+            notify('error', 'Failed to create admin: ' + (err.message || 'Unknown error'));
         }
     });
 
@@ -115,6 +134,7 @@ export default function Admin() {
     const handleScrape = (e: any) => {
         e.preventDefault();
         if (!scrapeUrl) return;
+        setNotification(null);
         scrapeMutation.mutate();
     };
 
@@ -131,7 +151,7 @@ export default function Admin() {
         if (!draft) return;
         
         if (!draft.title.trim() || !draft.content.trim()) {
-            alert('ርዕስ እና ግጥም ማካተት ግዴታ ነው (Title and content are required)');
+            notify('error', 'ርዕስ እና ግጥም ማካተት ግዴታ ነው (Title and content are required)');
             return;
         }
         
@@ -146,7 +166,10 @@ export default function Admin() {
         }, {
             onSuccess: () => {
                 setDrafts(prev => prev.filter(d => d.id !== draftId));
-                alert('በተሳካ ሁኔታ ታትሟል (Published successfully!)');
+                notify('success', 'በተሳካ ሁኔታ ታትሟል (Published successfully!)');
+            },
+            onError: (err: any) => {
+                notify('error', 'ህትመት አልተሳካም: ' + (err.message || 'Unknown error'));
             }
         });
     };
@@ -156,7 +179,7 @@ export default function Admin() {
     const handlePublishAll = async () => {
         const validDrafts = drafts.filter(draft => draft.title.trim() && draft.content.trim());
         if (validDrafts.length === 0) {
-            alert('ምንም ትክክለኛ ረቂቅ የለም (No valid drafts to publish)');
+            notify('error', 'ምንም ትክክለኛ ረቂቅ የለም (No valid drafts to publish)');
             return;
         }
 
@@ -179,9 +202,9 @@ export default function Admin() {
             const validIds = new Set(validDrafts.map(d => d.id));
             setDrafts(prev => prev.filter(d => !validIds.has(d.id)));
             queryClient.invalidateQueries({ queryKey: ['poems'] });
-            alert(`በተሳካ ሁኔታ ${successCount} ግጥሞች ታትመዋል (Published ${successCount} poems successfully!)`);
+            notify('success', `በተሳካ ሁኔታ ${successCount} ግጥሞች ታትመዋል (Published ${successCount} poems successfully!)`);
         } catch (error: any) {
-            alert("ህትመት አልተሳካም (Publish failed): " + error.message);
+            notify('error', "ህትመት አልተሳካም (Publish failed): " + error.message);
         } finally {
             setIsPublishingAll(false);
         }
@@ -193,13 +216,28 @@ export default function Admin() {
         createAdminMutation.mutate({ username: newAdminUsername, password: newAdminPassword });
     };
 
-    const handleRoleChange = (userId: string, currentRole: string) => {
-        const newRole = currentRole === 'admin' ? 'user' : 'admin';
-        const actionText = newRole === 'admin' ? 'promote this user to admin' : 'demote this admin to user';
-        
-        if (window.confirm(`Are you sure you want to ${actionText}?`)) {
-            updateUserRoleMutation.mutate({ id: userId, role: newRole });
+    const { data: publishedPoems, isLoading: isLoadingPublished } = useQuery({
+        queryKey: ['admin-published-poems'],
+        queryFn: () => poemsApi.getAll(),
+        enabled: activeTab === 'content'
+    });
+
+    const deleteAdminPoemMutation = useMutation({
+        mutationFn: (poemId: string) => poemsApi.delete(poemId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-published-poems'] });
+            queryClient.invalidateQueries({ queryKey: ['poems'] });
+            setDeletingPoemId(null);
+            notify('success', 'ግጥሙ በተሳካ ሁኔታ ተሰርዟል (Poem deleted successfully)');
+        },
+        onError: (err: any) => {
+            notify('error', 'ስህተት (Failed to delete poem): ' + (err?.message || 'Error'));
         }
+    });
+
+    const handleRoleChange = (userId: string, currentRole: string, username: string) => {
+        const newRole = currentRole === 'admin' ? 'user' : 'admin';
+        setRoleConfirmTarget({ id: userId, newRole, username });
     };
 
     if (isLoading || !user || user.role !== 'admin') {
@@ -252,6 +290,28 @@ export default function Admin() {
                 </button>
             </div>
 
+            {/* Notification Banner */}
+            {notification && (
+                <div className={`p-4 rounded-2xl flex items-center justify-between text-sm shadow-sm transition-all ${
+                    notification.type === 'success' ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' :
+                    notification.type === 'error' ? 'bg-rose-50 text-rose-900 border border-rose-200' :
+                    'bg-amber-50 text-amber-900 border border-amber-200'
+                }`}>
+                    <div className="flex items-center gap-3">
+                        {notification.type === 'success' && <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />}
+                        {notification.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />}
+                        {notification.type === 'info' && <Info className="w-5 h-5 text-amber-600 shrink-0" />}
+                        <span className="font-medium">{notification.message}</span>
+                    </div>
+                    <button 
+                        onClick={() => setNotification(null)} 
+                        className="p-1 text-gray-500 hover:text-gray-800 hover:bg-black/5 rounded-lg transition-colors ml-4"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+            )}
+
             {/* Tab Contents */}
             <div className="space-y-12">
                 
@@ -264,31 +324,57 @@ export default function Admin() {
                                 <Download className="w-5 h-5 text-[#B28200]" />
                                 ከቴሌግራም አምጣ (Scrape from Telegram)
                             </h2>
-                            <p className="text-sm text-[#8C8881] mb-6 max-w-2xl">
-                                Enter a Telegram channel link (e.g., https://t.me/channel) or a post link to extract recent poems and add them to your drafts below.
+                            <p className="text-sm text-[#8C8881] mb-6 max-w-2xl leading-relaxed">
+                                ቻናል ወይም የግጥም ሊንክ ያስገቡ (ለምሳሌ <code className="bg-white/80 px-1.5 py-0.5 rounded text-[#2C2C2C]">@amharic_poems</code>)። ቀድሞ በስብስብዎ ውስጥ ያሉ ግጥሞች በሙሉ በራስ-ሰር ይጣራሉ፤ አዳዲስ ግጥሞች እና ከድሮዎቹ ያልተካተቱ እስከ 2 ግጥሞች ብቻ ተለይተው የስንኝ ቅርጻቸው ሳይዛነፍ ይወጣሉ።
                             </p>
                             
                             <form onSubmit={handleScrape} className="flex flex-col sm:flex-row gap-4 relative z-10">
                                 <input
-                                    type="url"
+                                    type="text"
                                     value={scrapeUrl}
                                     onChange={(e) => setScrapeUrl(e.target.value)}
-                                    placeholder="https://t.me/..."
-                                    className="flex-1 px-4 py-3 bg-white border border-[#E5E1D8] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#B28200]/20 min-w-0"
+                                    placeholder="e.g. @amharic_poems or https://t.me/amharic_poems"
+                                    className="flex-1 px-4 py-3 bg-white border border-[#E5E1D8] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#B28200]/20 min-w-0 text-sm"
                                     required
                                 />
                                 <button
                                     type="submit"
-                                    disabled={scrapeMutation.isPending || !scrapeUrl}
+                                    disabled={scrapeMutation.isPending || !scrapeUrl.trim()}
                                     className="px-6 py-3 bg-[#B28200] text-white rounded-2xl font-medium hover:bg-[#8C6600] transition-colors flex justify-center items-center gap-2 disabled:opacity-50 shrink-0"
                                 >
-                                    {scrapeMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'አምጣ (Fetch Poems)'}
+                                    {scrapeMutation.isPending ? (
+                                        <>
+                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                            <span>በመተንተን ላይ... (Fetching & Analyzing...)</span>
+                                        </>
+                                    ) : (
+                                        'አምጣ (Fetch Poems)'
+                                    )}
                                 </button>
                             </form>
 
+                            {/* Quick Sample Presets */}
+                            <div className="mt-4 flex flex-wrap items-center gap-2 relative z-10 text-xs">
+                                <span className="text-[#8C8881] font-medium uppercase tracking-wider mr-1">ምሳሌ (Samples):</span>
+                                {[
+                                    { name: '@amharic_poems', url: 'https://t.me/amharic_poems' },
+                                    { name: '@amharic_poem', url: 'https://t.me/amharic_poem' },
+                                    { name: '@amharicpoems', url: 'https://t.me/amharicpoems' }
+                                ].map((sample) => (
+                                    <button
+                                        key={sample.name}
+                                        type="button"
+                                        onClick={() => setScrapeUrl(sample.url)}
+                                        className="px-3 py-1 bg-white hover:bg-amber-100/60 border border-[#E5E1D8] hover:border-[#B28200] text-[#5C5955] rounded-full transition-colors font-mono"
+                                    >
+                                        {sample.name}
+                                    </button>
+                                ))}
+                            </div>
+
                             {recentChannels && recentChannels.length > 0 && (
-                                <div className="mt-4 flex flex-wrap items-center gap-2 relative z-10">
-                                    <span className="text-xs text-[#8C8881] font-medium uppercase tracking-wider mr-2">Recent:</span>
+                                <div className="mt-4 flex flex-wrap items-center gap-2 relative z-10 pt-3 border-t border-[#FFEAB3]/60">
+                                    <span className="text-xs text-[#8C8881] font-medium uppercase tracking-wider mr-2">Recent Channels:</span>
                                     {recentChannels.map((channel: any) => (
                                         <div key={channel.id} className="group relative flex items-center bg-white/60 hover:bg-white border border-[#E5E1D8] rounded-full transition-colors pl-1 pr-1 py-1">
                                             <button
@@ -303,6 +389,7 @@ export default function Admin() {
                                                 onClick={() => deleteChannelMutation.mutate(channel.id)}
                                                 disabled={deleteChannelMutation.isPending}
                                                 className="p-1 rounded-full text-[#A39D93] hover:text-red-500 hover:bg-red-50 transition-colors ml-1"
+                                                title="Remove"
                                             >
                                                 <X className="w-3 h-3" />
                                             </button>
@@ -355,14 +442,34 @@ export default function Admin() {
                                                 </div>
                                                 
                                                 <div>
-                                                    <label className="block text-sm font-medium text-[#5C5955] mb-2">ግጥም (Content)</label>
-                                                    <textarea
-                                                        value={draft.content}
-                                                        onChange={(e) => updateDraft(draft.id, 'content', e.target.value)}
-                                                        rows={8}
-                                                        className="w-full px-4 py-4 bg-white border border-[#E5E1D8] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#2D2B2A]/20 resize-y whitespace-pre-wrap leading-relaxed break-all"
-                                                        required
-                                                    />
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <label className="block text-sm font-medium text-[#5C5955]">ግጥም (Content)</label>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-xs text-[#8C8881]">
+                                                                {draft.content.split('\n').filter(l => l.trim().length > 0).length} ስንኞች (verses)
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => toggleDraftPreview(draft.id)}
+                                                                className="text-xs px-2.5 py-1 bg-[#F5F2EB] hover:bg-[#E5E1D8] text-[#5C5955] rounded-lg transition-colors font-medium"
+                                                            >
+                                                                {previewDraftIds[draft.id] ? 'ማረሚያ (Edit)' : 'ቅድመ እይታ (Preview)'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    {previewDraftIds[draft.id] ? (
+                                                        <div className="w-full px-5 py-5 bg-[#FAF8F5] border border-[#E5E1D8] rounded-2xl min-h-[180px] font-sans leading-relaxed text-[#2D2B2A] whitespace-pre-wrap break-words">
+                                                            {draft.content}
+                                                        </div>
+                                                    ) : (
+                                                        <textarea
+                                                            value={draft.content}
+                                                            onChange={(e) => updateDraft(draft.id, 'content', e.target.value)}
+                                                            rows={8}
+                                                            className="w-full px-4 py-4 bg-white border border-[#E5E1D8] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#2D2B2A]/20 resize-y whitespace-pre-wrap leading-relaxed break-words font-sans"
+                                                            required
+                                                        />
+                                                    )}
                                                 </div>
                                                 
                                                 <div className="grid sm:grid-cols-2 gap-6">
@@ -416,6 +523,110 @@ export default function Admin() {
                                 </div>
                             </div>
                         )}
+
+                        {/* PUBLISHED POEMS MANAGEMENT */}
+                        <div className="bg-white rounded-3xl border border-[#E5E1D8] shadow-sm p-6 sm:p-8 space-y-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E1D8] pb-4">
+                                <div>
+                                    <h2 className="text-xl sm:text-2xl font-bold text-[#2D2B2A] flex items-center gap-2.5">
+                                        <BookOpen className="w-5 h-5 text-[#8B7355]" />
+                                        የታተሙ ግጥሞች (Published Poems)
+                                        {publishedPoems && (
+                                            <span className="text-sm font-normal text-[#8C8881] bg-[#FAF8F5] px-2.5 py-0.5 rounded-full border border-[#E5E1D8]">
+                                                {publishedPoems.length}
+                                            </span>
+                                        )}
+                                    </h2>
+                                    <p className="text-xs sm:text-sm text-[#8C8881] mt-1">
+                                        በስርዓቱ ውስጥ ያሉ ሁሉንም የታተሙ ግጥሞች ይመልከቱ ወይም ይሰርዙ (Manage and delete published poems)
+                                    </p>
+                                </div>
+                                <div className="relative w-full sm:w-72">
+                                    <Search className="w-4 h-4 text-[#8C8881] absolute left-3 top-1/2 -translate-y-1/2" />
+                                    <input 
+                                        type="text"
+                                        value={publishedSearchQuery}
+                                        onChange={(e) => setPublishedSearchQuery(e.target.value)}
+                                        placeholder="በርዕስ ወይም በገጣሚ ፈልግ..."
+                                        className="w-full pl-9 pr-4 py-2 text-sm bg-[#FAF8F5] border border-[#E5E1D8] rounded-xl focus:outline-none focus:border-[#8B7355]"
+                                    />
+                                </div>
+                            </div>
+
+                            {isLoadingPublished ? (
+                                <div className="py-12 flex justify-center items-center text-sm text-[#8C8881] gap-2">
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                    ግጥሞችን በመጫን ላይ...
+                                </div>
+                            ) : (!publishedPoems || publishedPoems.length === 0) ? (
+                                <div className="py-12 text-center text-sm text-[#8C8881]">
+                                    እስካሁን የታተመ ግጥም የለም።
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-sm">
+                                        <thead className="bg-[#FAF8F5] border-b border-[#E5E1D8] text-xs font-semibold uppercase tracking-wider text-[#8C8881]">
+                                            <tr>
+                                                <th className="px-4 py-3">ርዕስ (Title)</th>
+                                                <th className="px-4 py-3">ገጣሚ (Author)</th>
+                                                <th className="px-4 py-3">ዓይነት / ምድብ</th>
+                                                <th className="px-4 py-3">የታተመበት ቀን</th>
+                                                <th className="px-4 py-3 text-right">እርምጃዎች (Actions)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-[#E5E1D8]">
+                                            {publishedPoems
+                                                .filter(p => {
+                                                    if (!publishedSearchQuery.trim()) return true;
+                                                    const q = publishedSearchQuery.toLowerCase();
+                                                    return (p.title || '').toLowerCase().includes(q) ||
+                                                           (p.authorName || '').toLowerCase().includes(q);
+                                                })
+                                                .map(poem => (
+                                                    <tr key={poem.id} className="hover:bg-[#FAF8F5]/60 transition-colors">
+                                                        <td className="px-4 py-3.5 font-medium text-[#2C2C2C] max-w-[200px] truncate">
+                                                            {poem.title}
+                                                        </td>
+                                                        <td className="px-4 py-3.5 text-[#5C5955] max-w-[150px] truncate">
+                                                            {poem.authorName || 'ያልታወቀ'}
+                                                        </td>
+                                                        <td className="px-4 py-3.5 text-xs text-[#8C8881]">
+                                                            <span className="px-2 py-0.5 rounded-full bg-[#FAF8F5] border border-[#E5E1D8]">
+                                                                {poem.type === 'prompt' ? 'ውይይት' : (poem.category || 'መደበኛ')}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3.5 text-xs text-[#8C8881] whitespace-nowrap">
+                                                            {new Date(poem.createdAt).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <Link
+                                                                    to={`/poems/${poem.id}`}
+                                                                    target="_blank"
+                                                                    className="p-1.5 text-[#8C8881] hover:text-[#8B7355] hover:bg-[#FAF8F5] rounded-lg transition-colors inline-flex items-center gap-1 text-xs"
+                                                                    title="ይመልከቱ"
+                                                                >
+                                                                    <ExternalLink className="w-3.5 h-3.5" />
+                                                                    <span className="hidden sm:inline">ይመልከቱ</span>
+                                                                </Link>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setDeletingPoemId(poem.id)}
+                                                                    className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors inline-flex items-center gap-1 text-xs"
+                                                                    title="ሰርዝ"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                    <span className="hidden sm:inline">ሰርዝ</span>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
                     </>
                 )}
 
@@ -462,7 +673,7 @@ export default function Admin() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button
-                                                    onClick={() => handleRoleChange(u.id, u.role)}
+                                                    onClick={() => handleRoleChange(u.id, u.role, u.username)}
                                                     disabled={user?.id === u.id || updateUserRoleMutation.isPending}
                                                     className={`text-sm font-medium px-4 py-2 rounded-lg transition-colors ${
                                                         u.role === 'admin' 
@@ -526,6 +737,98 @@ export default function Admin() {
                     </div>
                 )}
             </div>
+
+            {/* Delete Poem Confirmation Modal in Admin */}
+            {deletingPoemId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#EAE5D9] space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="flex items-center gap-3 text-red-600">
+                            <div className="p-2.5 bg-red-50 rounded-full">
+                                <Trash2 className="w-5 h-5 text-red-600" />
+                            </div>
+                            <h3 className="font-serif text-xl text-[#2C2C2C] font-semibold">
+                                ግጥሙን ሰርዝ (Delete Poem)
+                            </h3>
+                        </div>
+                        
+                        <p className="text-sm text-[#5C564D] leading-relaxed">
+                            ይህን ግጥም ከመረጃ ቋቱ ላይ በእርግጥ መሰረዝ ይፈልጋሉ? ይህ ድርጊት አይመለስም።
+                            (Are you sure you want to permanently remove this poem from the platform?)
+                        </p>
+
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setDeletingPoemId(null)}
+                                disabled={deleteAdminPoemMutation.isPending}
+                                className="px-4 py-2 text-sm font-medium text-[#8B8476] hover:text-[#2C2C2C] hover:bg-[#F3F0EA] rounded-xl transition-colors"
+                            >
+                                ተመለስ (Cancel)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => deleteAdminPoemMutation.mutate(deletingPoemId)}
+                                disabled={deleteAdminPoemMutation.isPending}
+                                className="px-5 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+                            >
+                                {deleteAdminPoemMutation.isPending ? (
+                                    <>
+                                        <RefreshCw className="w-4 h-4 animate-spin" />
+                                        በመሰረዝ ላይ...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4" />
+                                        አዎ፣ ሰርዝ (Delete)
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Role Change Confirmation Modal in Admin */}
+            {roleConfirmTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#EAE5D9] space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="flex items-center gap-3 text-amber-600">
+                            <div className="p-2.5 bg-amber-50 rounded-full">
+                                <Shield className="w-5 h-5 text-amber-600" />
+                            </div>
+                            <h3 className="font-serif text-xl text-[#2C2C2C] font-semibold">
+                                የተጠቃሚ ሚና ለውጥ (Change User Role)
+                            </h3>
+                        </div>
+                        
+                        <p className="text-sm text-[#5C564D] leading-relaxed">
+                            ተጠቃሚ <strong>"{roleConfirmTarget.username}"</strong> ወደ <strong>{roleConfirmTarget.newRole === 'admin' ? 'Admin' : 'Standard User'}</strong> መቀየር ይፈልጋሉ?
+                        </p>
+
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setRoleConfirmTarget(null)}
+                                disabled={updateUserRoleMutation.isPending}
+                                className="px-4 py-2 text-sm font-medium text-[#8B8476] hover:text-[#2C2C2C] hover:bg-[#F3F0EA] rounded-xl transition-colors"
+                            >
+                                ተመለስ (Cancel)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    updateUserRoleMutation.mutate({ id: roleConfirmTarget.id, role: roleConfirmTarget.newRole });
+                                    setRoleConfirmTarget(null);
+                                }}
+                                disabled={updateUserRoleMutation.isPending}
+                                className="px-5 py-2 text-sm font-medium text-white bg-[#2C2C2C] hover:bg-[#1A1918] rounded-xl transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+                            >
+                                {updateUserRoleMutation.isPending ? 'በማስተካከል ላይ...' : 'አዎ፣ ቀይር (Confirm)'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

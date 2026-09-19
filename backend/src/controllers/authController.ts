@@ -33,12 +33,12 @@ export const register = async (req: Request, res: Response) => {
         
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
         
-        res.status(201).json({ success: true, user });
+        res.status(201).json({ success: true, user, token });
     } catch (err: any) {
         console.error(err);
         res.status(500).json({ success: false, error: { message: "Failed to register" }});
@@ -65,12 +65,12 @@ export const login = async (req: Request, res: Response) => {
         
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
         
-        res.json({ success: true, user: { id: user.id, username: user.username, role: user.role } });
+        res.json({ success: true, user: { id: user.id, username: user.username, role: user.role }, token });
     } catch (err: any) {
         console.error(err);
         res.status(500).json({ success: false, error: { message: "Failed to login" }});
@@ -78,12 +78,16 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
-    res.clearCookie('token');
+    res.clearCookie('token', { secure: true, sameSite: 'none' });
     res.json({ success: true });
 };
 
 export const getMe = async (req: Request, res: Response) => {
     try {
+        if (req.user) {
+            return res.json({ success: true, user: req.user });
+        }
+        
         const token = req.cookies.token;
         if (!token) {
             return res.status(401).json({ success: false, error: { message: "Not authenticated" }});

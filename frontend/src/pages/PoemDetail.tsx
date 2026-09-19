@@ -24,6 +24,9 @@ export default function PoemDetail() {
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState('');
     const [editTitle, setEditTitle] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteReplyTargetId, setDeleteReplyTargetId] = useState<string | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const { data: poem, isLoading: isLoadingPoem, error: poemError } = useQuery({
         queryKey: ['poem', id],
@@ -50,11 +53,17 @@ export default function PoemDetail() {
 
     const filteredRelatedPoems = relatedPoems?.filter(p => p.id !== id);
 
+    const canManagePoem = Boolean(user?.role === 'admin' || (poem as any)?.canManage);
+
     const deletePoemMutation = useMutation({
         mutationFn: () => poemsApi.delete(id!, authorToken),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['poems'] });
+            setShowDeleteModal(false);
             navigate('/');
+        },
+        onError: (err: any) => {
+            setDeleteError(err?.message || 'Failed to delete poem');
         }
     });
 
@@ -72,6 +81,10 @@ export default function PoemDetail() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['replies', id] });
             queryClient.invalidateQueries({ queryKey: ['poems'] });
+            setDeleteReplyTargetId(null);
+        },
+        onError: (err: any) => {
+            setDeleteError(err?.message || 'Failed to delete reply');
         }
     });
 
@@ -175,7 +188,7 @@ export default function PoemDetail() {
                     {poem.type === 'prompt' ? (
                         <div className="w-full min-w-0 overflow-hidden">
                             <div 
-                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full max-w-full min-w-0 overflow-hidden"
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full max-w-full min-w-0 overflow-hidden"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                             />
                             
@@ -189,8 +202,8 @@ export default function PoemDetail() {
                                             {language === 'am' ? 'ምንጭ' : 'Source'}
                                         </a>
                                     )}
-                                    {user?.role === 'admin' && (
-                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 ml-4">
+                                    {canManagePoem && (
+                                        <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-2 ml-4">
                                             <button 
                                                 onClick={() => {
                                                     setEditTitle(poem.title);
@@ -203,8 +216,11 @@ export default function PoemDetail() {
                                                 <Pencil className="w-3.5 h-3.5" />
                                             </button>
                                             <button 
-                                                onClick={() => { if(window.confirm(t('deleteConfirm') || 'Are you sure you want to delete this poem?')) deletePoemMutation.mutate(); }}
-                                                className="p-1.5 text-[#A39D93] hover:text-[#8B7355] hover:bg-[#F3F0EA] rounded-full transition-colors inline-flex border border-transparent"
+                                                onClick={() => {
+                                                    setDeleteError(null);
+                                                    setShowDeleteModal(true);
+                                                }}
+                                                className="p-1.5 text-[#A39D93] hover:text-red-600 hover:bg-red-50 rounded-full transition-colors inline-flex border border-transparent"
                                                 title={t('delete')}
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -217,7 +233,7 @@ export default function PoemDetail() {
                     ) : (
                         <div className="w-full min-w-0 overflow-hidden">
                             <div 
-                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full max-w-full min-w-0 overflow-hidden"
+                                className="poem-content text-lg sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full max-w-full min-w-0 overflow-hidden"
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(poem.content)) }}
                             />
                             
@@ -234,9 +250,9 @@ export default function PoemDetail() {
                                     )}
                                 </div>
                                 
-                                {/* Admin actions */}
-                                {user?.role === 'admin' && (
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                {/* Admin / Author actions */}
+                                {canManagePoem && (
+                                    <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-2">
                                         <button 
                                             onClick={() => {
                                                 setEditTitle(poem.title);
@@ -249,8 +265,11 @@ export default function PoemDetail() {
                                             <Pencil className="w-4 h-4" />
                                         </button>
                                         <button 
-                                            onClick={() => { if(window.confirm(t('deleteConfirm') || 'Are you sure you want to delete this poem?')) deletePoemMutation.mutate(); }}
-                                            className="p-2 text-[#A39D93] hover:text-[#8B7355] hover:bg-[#F3F0EA] rounded-full transition-colors inline-flex border border-transparent"
+                                            onClick={() => {
+                                                setDeleteError(null);
+                                                setShowDeleteModal(true);
+                                            }}
+                                            className="p-2 text-[#A39D93] hover:text-red-600 hover:bg-red-50 rounded-full transition-colors inline-flex border border-transparent"
                                             title={t('delete')}
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -271,17 +290,20 @@ export default function PoemDetail() {
                                 <div key={reply.id} className="w-full max-w-lg mx-auto min-w-0 relative group">
                                     <div className="w-full min-w-0 overflow-hidden">
                                         <div 
-                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words break-all w-full max-w-full min-w-0 overflow-hidden"
+                                            className="poem-content text-base sm:text-2xl leading-[2.2] whitespace-pre-wrap text-[#5C564D] text-left break-words w-full max-w-full min-w-0 overflow-hidden"
                                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatPoemContent(reply.content)) }}
                                         />
                                         
                                         <div className="mt-2 flex flex-row items-center justify-end gap-3 flex-wrap">
                                             <p className="font-serif italic text-[#8B8476] text-sm sm:text-base break-words">— {reply.authorName || t('unknownAuthor')}</p>
                                             <p className="text-[10px] text-[#A39D93] font-sans tracking-widest uppercase">{new Date(reply.createdAt).toLocaleDateString(language === 'am' ? 'am-ET' : 'en-US')}</p>
-                                            {user?.role === 'admin' && (
+                                            {(user?.role === 'admin' || (reply as any)?.canManage) && (
                                                 <button
-                                                    onClick={() => { if(window.confirm('Delete this reply?')) deleteReplyMutation.mutate(reply.id); }}
-                                                    className="p-1.5 text-[#A39D93] hover:text-[#8B7355] hover:bg-[#F3F0EA] rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                                                    onClick={() => {
+                                                        setDeleteError(null);
+                                                        setDeleteReplyTargetId(reply.id);
+                                                    }}
+                                                    className="p-1.5 text-[#A39D93] hover:text-red-600 hover:bg-red-50 rounded-full transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                                                     title={t('delete')}
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
@@ -370,6 +392,126 @@ export default function PoemDetail() {
                     </div>
                 )}
             </div>
+
+            {/* Poem Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#EAE5D9] space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="flex items-center gap-3 text-red-600">
+                            <div className="p-2.5 bg-red-50 rounded-full">
+                                <Trash2 className="w-5 h-5 text-red-600" />
+                            </div>
+                            <h3 className="font-serif text-xl text-[#2C2C2C] font-semibold">
+                                {language === 'am' ? 'ግጥሙን ሰርዝ' : 'Delete Poem'}
+                            </h3>
+                        </div>
+                        
+                        <p className="text-sm text-[#5C564D] leading-relaxed">
+                            {language === 'am' 
+                                ? 'ይህን ግጥም በእርግጥ መሰረዝ ይፈልጋሉ? ይህ ድርጊት አይመለስም።' 
+                                : 'Are you sure you want to delete this poem? This action cannot be undone.'}
+                        </p>
+
+                        {deleteError && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+                                {deleteError}
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setDeleteError(null);
+                                }}
+                                disabled={deletePoemMutation.isPending}
+                                className="px-4 py-2 text-sm font-medium text-[#8B8476] hover:text-[#2C2C2C] hover:bg-[#F3F0EA] rounded-xl transition-colors"
+                            >
+                                {language === 'am' ? 'ተመለስ' : 'Cancel'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => deletePoemMutation.mutate()}
+                                disabled={deletePoemMutation.isPending}
+                                className="px-5 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+                            >
+                                {deletePoemMutation.isPending ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        {language === 'am' ? 'በመሰረዝ ላይ...' : 'Deleting...'}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4" />
+                                        {language === 'am' ? 'ሰርዝ' : 'Delete'}
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Reply Delete Confirmation Modal */}
+            {deleteReplyTargetId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                    <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#EAE5D9] space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="flex items-center gap-3 text-red-600">
+                            <div className="p-2.5 bg-red-50 rounded-full">
+                                <Trash2 className="w-5 h-5 text-red-600" />
+                            </div>
+                            <h3 className="font-serif text-xl text-[#2C2C2C] font-semibold">
+                                {language === 'am' ? 'ምላሹን ሰርዝ' : 'Delete Reply'}
+                            </h3>
+                        </div>
+                        
+                        <p className="text-sm text-[#5C564D] leading-relaxed">
+                            {language === 'am' 
+                                ? 'ይህን ምላሽ በእርግጥ መሰረዝ ይፈልጋሉ?' 
+                                : 'Are you sure you want to delete this reply?'}
+                        </p>
+
+                        {deleteError && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+                                {deleteError}
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setDeleteReplyTargetId(null);
+                                    setDeleteError(null);
+                                }}
+                                disabled={deleteReplyMutation.isPending}
+                                className="px-4 py-2 text-sm font-medium text-[#8B8476] hover:text-[#2C2C2C] hover:bg-[#F3F0EA] rounded-xl transition-colors"
+                            >
+                                {language === 'am' ? 'ተመለስ' : 'Cancel'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => deleteReplyMutation.mutate(deleteReplyTargetId)}
+                                disabled={deleteReplyMutation.isPending}
+                                className="px-5 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
+                            >
+                                {deleteReplyMutation.isPending ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        {language === 'am' ? 'በመሰረዝ ላይ...' : 'Deleting...'}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4" />
+                                        {language === 'am' ? 'ሰርዝ' : 'Delete'}
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

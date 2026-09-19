@@ -66,8 +66,17 @@ export const getPoemById = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, error: { code: "POEM_NOT_FOUND", message: "ግጥሙ አልተገኘም።" }});
         }
         
+        const rawAuthorToken = (req.headers['x-author-token'] as string) || (req.query?.authorToken as string) || req.headers['authorization']?.split(' ')[1];
+        const isAdmin = Boolean(req.user && req.user.role === 'admin');
+        const isAuthor = Boolean(
+            (rawAuthorToken && result[0].authorTokenHash === hashToken(rawAuthorToken)) ||
+            (req.user && result[0].userId && result[0].userId === req.user.id) ||
+            (req.user && result[0].authorTokenHash === hashToken(req.user.id))
+        );
+        const canManage = isAdmin || isAuthor;
+        
         const { authorTokenHash, ...poemData } = result[0];
-        res.json({ success: true, data: poemData });
+        res.json({ success: true, data: { ...poemData, canManage } });
     } catch (err: any) {
         res.status(500).json({ success: false, error: { message: "Failed to fetch poem" }});
     }
@@ -77,13 +86,17 @@ export const createPoem = async (req: Request, res: Response) => {
     try {
         if (!db) return res.status(500).json({ success: false, error: { message: "Database not configured" }});
         
-        const { title, content, authorName, category, type, sourceUrl, authorToken } = req.body;
+        const { title, content, authorName, category, type, sourceUrl, authorToken } = req.body || {};
         
         if (!title || !content || (!authorToken && !req.user)) {
             return res.status(400).json({ success: false, error: { message: "Missing required fields" }});
         }
         
-        const finalAuthorName = req.user ? req.user.username : (authorName || 'ያልታወቀ');
+        // Use the explicitly provided authorName first. Only fallback to logged in username or 'ያልታወቀ' if none provided
+        const trimmedAuthorName = typeof authorName === 'string' ? authorName.trim() : '';
+        const finalAuthorName = trimmedAuthorName.length > 0 
+            ? trimmedAuthorName 
+            : (req.user?.username || 'ያልታወቀ');
         const finalAuthorToken = req.user ? req.user.id : authorToken;
         const userId = req.user ? req.user.id : null;
         
@@ -111,31 +124,50 @@ export const updatePoem = async (req: Request, res: Response) => {
         if (!db) return res.status(500).json({ success: false, error: { message: "Database not configured" }});
         
         const id = req.params.id as string;
-        const { title, content, authorToken } = req.body;
+        const { title, content, authorToken, authorName, category, type, sourceUrl } = req.body || {};
         
-        const token = req.headers['authorization']?.split(' ')[1] || authorToken;
-        const isAdmin = req.user && req.user.role === 'admin';
-        
-        if (!isAdmin && !token) return res.status(401).json({ success: false, error: { message: "Unauthorized" }});
+        const rawAuthorToken = authorToken || (req.headers['x-author-token'] as string) || req.headers['authorization']?.split(' ')[1];
+        const isAdmin = Boolean(req.user && req.user.role === 'admin');
         
         const existing = await db.select().from(poems).where(eq(poems.id, id)).limit(1);
         if (existing.length === 0 || existing[0].status !== 'active') {
             return res.status(404).json({ success: false, error: { message: "Poem not found" }});
         }
         
-        if (!isAdmin && existing[0].authorTokenHash !== hashToken(token)) {
+        const isAuthor = Boolean(
+            (rawAuthorToken && existing[0].authorTokenHash === hashToken(rawAuthorToken)) ||
+            (req.user && existing[0].userId && existing[0].userId === req.user.id) ||
+            (req.user && existing[0].authorTokenHash === hashToken(req.user.id))
+        );
+        
+        if (!isAdmin && !isAuthor) {
             return res.status(403).json({ success: false, error: { message: "Forbidden: You don't own this poem" }});
         }
         
-        const result = await db.update(poems).set({
-            title: title || existing[0].title,
-            content: content || existing[0].content,
+        const updateData: any = {
+            title: title !== undefined ? title : existing[0].title,
+            content: content !== undefined ? content : existing[0].content,
             updatedAt: new Date()
-        }).where(eq(poems.id, id)).returning();
+        };
+        if (authorName !== undefined && typeof authorName === 'string') {
+            updateData.authorName = authorName.trim() || existing[0].authorName;
+        }
+        if (category !== undefined) {
+            updateData.category = category;
+        }
+        if (type !== undefined) {
+            updateData.type = type;
+        }
+        if (sourceUrl !== undefined) {
+            updateData.sourceUrl = sourceUrl;
+        }
+        
+        const result = await db.update(poems).set(updateData).where(eq(poems.id, id)).returning();
         
         const { authorTokenHash, ...poemData } = result[0];
         res.json({ success: true, data: poemData });
     } catch (err: any) {
+        console.error("Update poem error:", err);
         res.status(500).json({ success: false, error: { message: "Failed to update poem" }});
     }
 };
@@ -145,25 +177,34 @@ export const deletePoem = async (req: Request, res: Response) => {
         if (!db) return res.status(500).json({ success: false, error: { message: "Database not configured" }});
         
         const id = req.params.id as string;
-        const { authorToken } = req.body; // In REST, body in DELETE is allowed but sometimes tricky. Better to pass in headers, but for MVP body is fine.
-        
-        const token = req.headers['authorization']?.split(' ')[1] || authorToken;
-        const isAdmin = req.user && req.user.role === 'admin';
-        
-        if (!isAdmin && !token) return res.status(401).json({ success: false, error: { message: "Unauthorized" }});
+        const rawAuthorToken = req.body?.authorToken 
+            || (req.headers['x-author-token'] as string)
+            || (req.query?.authorToken as string)
+            || req.headers['authorization']?.split(' ')[1];
+            
+        const isAdmin = Boolean(req.user && req.user.role === 'admin');
         
         const existing = await db.select().from(poems).where(eq(poems.id, id)).limit(1);
-        if (existing.length === 0) {
+        if (existing.length === 0 || existing[0].status === 'deleted') {
             return res.status(404).json({ success: false, error: { message: "Poem not found" }});
         }
         
-        if (!isAdmin && existing[0].authorTokenHash !== hashToken(token)) {
-            return res.status(403).json({ success: false, error: { message: "Forbidden" }});
+        const isAuthor = Boolean(
+            (rawAuthorToken && existing[0].authorTokenHash === hashToken(rawAuthorToken)) ||
+            (req.user && existing[0].userId && existing[0].userId === req.user.id) ||
+            (req.user && existing[0].authorTokenHash === hashToken(req.user.id))
+        );
+        
+        if (!isAdmin && !isAuthor) {
+            return res.status(403).json({ success: false, error: { message: "Forbidden: You don't have permission to delete this poem" }});
         }
         
         await db.update(poems).set({ status: 'deleted', updatedAt: new Date() }).where(eq(poems.id, id));
+        await db.update(replies).set({ status: 'deleted', updatedAt: new Date() }).where(eq(replies.poemId, id));
+        
         res.json({ success: true, data: { id }});
     } catch (err: any) {
+        console.error("Delete poem error:", err);
         res.status(500).json({ success: false, error: { message: "Failed to delete poem" }});
     }
 };

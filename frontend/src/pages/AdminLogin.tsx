@@ -21,14 +21,19 @@ export default function AdminLogin() {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ username, password })
             });
 
             const data = await res.json();
 
             if (data.success) {
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                }
                 if (data.user.role !== 'admin') {
-                    await fetch('/api/auth/logout', { method: 'POST' });
+                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                    localStorage.removeItem('token');
                     setUser(null);
                     setError('Access denied. Admin privileges required.');
                 } else {
@@ -45,9 +50,26 @@ export default function AdminLogin() {
         }
     };
 
+    const handleFillDemo = () => {
+        setUsername('admin');
+        setPassword('admin123');
+    };
+
     return (
         <div className="w-full max-w-md mx-auto mt-6 sm:mt-12 bg-white p-6 sm:p-12 rounded-2xl shadow-sm border border-[#F3F0EA]">
-            <h1 className="text-3xl font-serif mb-8 text-center text-[#2C2C2C] tracking-wide">Admin Login</h1>
+            <h1 className="text-3xl font-serif mb-4 text-center text-[#2C2C2C] tracking-wide">Admin Login</h1>
+            
+            <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-center justify-between">
+                <span>Default: <strong>admin</strong> / <strong>admin123</strong></span>
+                <button
+                    type="button"
+                    onClick={handleFillDemo}
+                    className="px-2 py-1 bg-amber-200 hover:bg-amber-300 rounded font-medium text-amber-950 transition-colors"
+                >
+                    Auto-Fill
+                </button>
+            </div>
+
             {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-8 text-sm">{error}</div>}
             
             <form onSubmit={handleSubmit} className="space-y-6">
