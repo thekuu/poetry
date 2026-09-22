@@ -7,7 +7,7 @@ import { getSearchVariants } from "../utils/amharicTransliterator.js";
 
 export const getPoems = async (req: Request, res: Response) => {
     try {
-        if (!db) return res.status(500).json({ success: false, error: { message: "Database not configured" }});
+        if (!db) return res.status(500).json({ success: false, error: { message: "Database not configured (DATABASE_URL is missing)" }});
         
         const category = req.query.category as string;
         const search = req.query.q as string;
@@ -50,14 +50,14 @@ export const getPoems = async (req: Request, res: Response) => {
 
         res.json({ success: true, data: result });
     } catch (err: any) {
-        console.error(err);
-        res.status(500).json({ success: false, error: { message: "Failed to fetch poems" }});
+        console.error("Error in getPoems:", err);
+        res.status(500).json({ success: false, error: { message: err?.message || "Failed to fetch poems" }});
     }
 };
 
 export const getPoemById = async (req: Request, res: Response) => {
     try {
-        if (!db) return res.status(500).json({ success: false, error: { message: "Database not configured" }});
+        if (!db) return res.status(500).json({ success: false, error: { message: "Database not configured (DATABASE_URL is missing)" }});
         
         const id = req.params.id as string;
         const result = await db.select().from(poems).where(and(eq(poems.id, id), eq(poems.status, 'active'))).limit(1);
@@ -78,7 +78,8 @@ export const getPoemById = async (req: Request, res: Response) => {
         const { authorTokenHash, ...poemData } = result[0];
         res.json({ success: true, data: { ...poemData, canManage } });
     } catch (err: any) {
-        res.status(500).json({ success: false, error: { message: "Failed to fetch poem" }});
+        console.error("Error in getPoemById:", err);
+        res.status(500).json({ success: false, error: { message: err?.message || "Failed to fetch poem" }});
     }
 };
 

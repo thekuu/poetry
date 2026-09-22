@@ -23,6 +23,14 @@ appRouter.get("/admin/channels", getChannels);
 appRouter.post("/admin/channels", addChannel);
 appRouter.delete("/admin/channels/:id", deleteChannel);
 
+appRouter.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    dbConfigured: Boolean(process.env.DATABASE_URL),
+    timestamp: new Date().toISOString()
+  });
+});
+
 appRouter.get("/search", searchPoems);
 appRouter.get("/categories", getCategories);
 

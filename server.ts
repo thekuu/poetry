@@ -17,6 +17,14 @@ async function startServer() {
   // Mount API router
   app.use("/api", appRouter);
 
+  // Catch unmatched API routes and return JSON 404 instead of HTML SPA fallback
+  app.all("/api/*all", (req, res) => {
+    res.status(404).json({
+      success: false,
+      error: { message: `API endpoint not found: ${req.method} ${req.originalUrl}` }
+    });
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

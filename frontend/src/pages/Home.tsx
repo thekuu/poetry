@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { poemsApi } from '../services/api';
 import { Link, useSearchParams } from 'react-router-dom';
-import { MessageCircle, Sparkles, Feather } from 'lucide-react';
+import { MessageCircle, Sparkles, Feather, AlertCircle, RotateCcw } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { formatPoemContent } from '../utils/text';
 import { useLanguage } from '../context/LanguageContext';
@@ -14,7 +14,7 @@ export default function Home() {
     const searchQuery = searchParams.get('q') || undefined;
     const { t, language } = useLanguage();
 
-    const { data: poems, isLoading, error } = useQuery({
+    const { data: poems, isLoading, error, refetch } = useQuery({
         queryKey: ['poems', category, type, searchQuery],
         queryFn: () => poemsApi.getAll(category, searchQuery, type)
     });
@@ -32,7 +32,55 @@ export default function Home() {
     }
 
     if (error) {
-        return <div className="text-red-500 text-center py-12">{t('somethingWentWrong')}</div>;
+        const errorMessage = (error as Error)?.message || String(error);
+        const isDbError = errorMessage.toLowerCase().includes('database') || errorMessage.toLowerCase().includes('not configured');
+        const is404 = errorMessage.includes('404');
+        return (
+            <div className="py-16 px-4 max-w-lg mx-auto text-center space-y-5">
+                <div className="w-12 h-12 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto shadow-xs">
+                    <AlertCircle className="w-6 h-6" />
+                </div>
+                <div>
+                    <h2 className="text-xl font-medium text-[#2C2C2C] mb-1">{t('somethingWentWrong')}</h2>
+                    <p className="text-sm text-[#8B8476]">
+                        {language === 'am' ? 'ግጥሞችን ማምጣት አልተቻለም' : 'Unable to load poems at this moment'}
+                    </p>
+                </div>
+                <div className="bg-[#FAF8F5] border border-[#EAE5D9] rounded-xl p-4 text-xs font-mono text-left space-y-1">
+                    <p className="font-semibold text-rose-700">
+                        {is404 
+                            ? (language === 'am' ? 'የሰርቨር ኤፒአይ አልተገኘም (404 Not Found)' : 'Server Route Not Found (404)')
+                            : isDbError 
+                            ? (language === 'am' ? 'የዳታቤዝ ግንኙነት (Database Connection)' : 'Database Not Configured')
+                            : (language === 'am' ? 'የስህተት ዝርዝር (Error Detail)' : 'Error Detail')}
+                    </p>
+                    <p className="text-[#5C5955] break-words">{errorMessage}</p>
+                </div>
+                {isDbError && (
+                    <p className="text-xs text-[#8B8476] leading-relaxed bg-amber-50/70 border border-amber-200/60 p-3 rounded-lg text-left">
+                        {language === 'am'
+                            ? 'ማሳሰቢያ፡ በምርት (Production/Cloud Run) ላይ DATABASE_URL በትክክል መዋቀሩን ያረጋግጡ።'
+                            : 'Note: Ensure that DATABASE_URL is set in your Cloud Run or production environment settings.'}
+                    </p>
+                )}
+                {is404 && (
+                    <p className="text-xs text-[#8B8476] leading-relaxed bg-blue-50/70 border border-blue-200/60 p-3 rounded-lg text-left">
+                        {language === 'am'
+                            ? 'ማሳሰቢያ፡ አዲሱን የሰርቨር ማሻሻያ ወደ ምርት ለመላክ እባክዎ "Share" ወይም "Deploy" የሚለውን እንደገና ይጫኑ።'
+                            : 'Note: Please redeploy or create a new share link so the latest server build takes effect in production.'}
+                    </p>
+                )}
+                <div className="pt-2">
+                    <button
+                        onClick={() => refetch()}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#8B7355] text-white text-sm font-medium rounded-xl hover:bg-[#6F5B43] active:scale-95 transition-all shadow-xs"
+                    >
+                        <RotateCcw className="w-4 h-4" />
+                        {language === 'am' ? 'እንደገና ሞክር' : 'Retry'}
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     let pageTitle = t('formalPoemsTitle');
