@@ -1,6 +1,6 @@
-import { db } from './index.js';
-import { poems, replies } from './schema.js';
-import { hashToken } from '../utils/crypto.js';
+import { db } from './index.ts';
+import { poems, replies } from './schema.ts';
+import { hashToken } from '../utils/crypto.ts';
 import { eq } from 'drizzle-orm';
 
 async function runSeed() {

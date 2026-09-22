@@ -1,12 +1,12 @@
-import { Router } from "express";
-import { getPoems, getPoemById, createPoem, updatePoem, deletePoem, searchPoems } from "./controllers/poemController.js";
-import { getRepliesByPoemId, createReply, updateReply, deleteReply } from "./controllers/replyController.js";
-import { getCategories } from "./controllers/categoryController.js";
-import { scrapeTelegram, getChannels, addChannel, deleteChannel, createAdmin, getUsers, updateUserRole } from "./controllers/adminController.js";
-import { login, register, logout, getMe } from "./controllers/authController.js";
-import { authenticateUser } from "./middleware/auth.js";
+import express from "express";
+import { getPoems, getPoemById, createPoem, updatePoem, deletePoem, searchPoems } from "./controllers/poemController.ts";
+import { getRepliesByPoemId, createReply, updateReply, deleteReply } from "./controllers/replyController.ts";
+import { getCategories } from "./controllers/categoryController.ts";
+import { scrapeTelegram, getChannels, addChannel, deleteChannel, createAdmin, getUsers, updateUserRole } from "./controllers/adminController.ts";
+import { login, register, logout, getMe } from "./controllers/authController.ts";
+import { authenticateUser } from "./middleware/auth.ts";
 
-export const appRouter = Router();
+export const appRouter = express.Router();
 
 appRouter.use(authenticateUser);
 

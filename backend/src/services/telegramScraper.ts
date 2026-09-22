@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { db } from "../db/index.js";
-import { poems } from "../db/schema.js";
+import { db } from "../db/index.ts";
+import { poems } from "../db/schema.ts";
 
 function normalizeForMatching(text: string): string {
     return (text || '')

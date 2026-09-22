@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db } from '../db/index.js';
-import { users } from '../db/schema.js';
+import { db } from '../db/index.ts';
+import { users } from '../db/schema.ts';
 import { eq } from 'drizzle-orm';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_dev';

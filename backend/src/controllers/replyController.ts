@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
-import { db } from "../db/index.js";
-import { replies } from "../db/schema.js";
+import type { Request, Response } from "express";
+import { db } from "../db/index.ts";
+import { replies } from "../db/schema.ts";
 import { eq, desc, and, asc } from "drizzle-orm";
-import { hashToken } from "../utils/crypto.js";
+import { hashToken } from "../utils/crypto.ts";
 
 export const getRepliesByPoemId = async (req: Request, res: Response) => {
     try {

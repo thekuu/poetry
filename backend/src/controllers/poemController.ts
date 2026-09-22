@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
-import { db } from "../db/index.js";
-import { poems, replies } from "../db/schema.js";
+import type { Request, Response } from "express";
+import { db } from "../db/index.ts";
+import { poems, replies } from "../db/schema.ts";
 import { eq, desc, ilike, or, and, sql, count } from "drizzle-orm";
-import { hashToken } from "../utils/crypto.js";
-import { getSearchVariants } from "../utils/amharicTransliterator.js";
+import { hashToken } from "../utils/crypto.ts";
+import { getSearchVariants } from "../utils/amharicTransliterator.ts";
 
 export const getPoems = async (req: Request, res: Response) => {
     try {

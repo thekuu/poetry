@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { CATEGORIES } from "../utils/constants.js";
+import type { Request, Response } from "express";
+import { CATEGORIES } from "../utils/constants.ts";
 
 export const getCategories = async (req: Request, res: Response) => {
     try {

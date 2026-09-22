@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import { scrapeAndParsePoems } from "../services/telegramScraper.js";
-import { db } from "../db/index.js";
-import { telegramChannels, users } from "../db/schema.js";
+import { scrapeAndParsePoems } from "../services/telegramScraper.ts";
+import { db } from "../db/index.ts";
+import { telegramChannels, users } from "../db/schema.ts";
 import { eq, desc } from "drizzle-orm";
 
 export const createAdmin = async (req: Request, res: Response) => {
