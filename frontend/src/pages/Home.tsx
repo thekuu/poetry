@@ -35,6 +35,7 @@ export default function Home() {
         const errorMessage = (error as Error)?.message || String(error);
         const isDbError = errorMessage.toLowerCase().includes('database') || errorMessage.toLowerCase().includes('not configured');
         const is404 = errorMessage.includes('404');
+        const is500 = errorMessage.includes('500');
         return (
             <div className="py-16 px-4 max-w-lg mx-auto text-center space-y-5">
                 <div className="w-12 h-12 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto shadow-xs">
@@ -52,22 +53,24 @@ export default function Home() {
                             ? (language === 'am' ? 'የሰርቨር ኤፒአይ አልተገኘም (404 Not Found)' : 'Server Route Not Found (404)')
                             : isDbError 
                             ? (language === 'am' ? 'የዳታቤዝ ግንኙነት (Database Connection)' : 'Database Not Configured')
+                            : is500
+                            ? (language === 'am' ? 'የሰርቨር ስህተት (500 Internal Error)' : 'Server Error (500)')
                             : (language === 'am' ? 'የስህተት ዝርዝር (Error Detail)' : 'Error Detail')}
                     </p>
                     <p className="text-[#5C5955] break-words">{errorMessage}</p>
                 </div>
-                {isDbError && (
+                {(isDbError || is500) && (
                     <p className="text-xs text-[#8B8476] leading-relaxed bg-amber-50/70 border border-amber-200/60 p-3 rounded-lg text-left">
                         {language === 'am'
-                            ? 'ማሳሰቢያ፡ በምርት (Vercel ወይም Cloud Run) ላይ DATABASE_URL በትክክል መዋቀሩን ያረጋግጡ።'
-                            : 'Note: Ensure that DATABASE_URL is set in your Vercel Project Settings > Environment Variables (or Cloud Run).'}
+                            ? 'ማሳሰቢያ፡ በVercel Settings > Environment Variables ላይ DATABASE_URL በትክክል መሞላቱን ያረጋግጡ።'
+                            : 'Note: If deployed on Vercel, make sure DATABASE_URL is added to Vercel Project Settings > Environment Variables. Also push the latest compiled api/index.js.'}
                     </p>
                 )}
                 {is404 && (
                     <p className="text-xs text-[#8B8476] leading-relaxed bg-blue-50/70 border border-blue-200/60 p-3 rounded-lg text-left">
                         {language === 'am'
-                            ? 'ማሳሰቢያ፡ በVercel ላይ ከተጠቀሙ አዲሱን ኮድ (vercel.json እና api/index.ts) ወደ ጊትሃብ ፑሽ አድርገው በድጋሚ ይላኩ።'
-                            : 'Note: If deployed on Vercel, push the latest changes (including vercel.json and api/index.ts) to your repository so Vercel provisions the API serverless function.'}
+                            ? 'ማሳሰቢያ፡ በVercel ላይ ከተጠቀሙ አዲሱን ኮድ (vercel.json እና api/) ወደ ጊትሃብ ፑሽ አድርገው በድጋሚ ይላኩ።'
+                            : 'Note: If deployed on Vercel, push the latest changes (including vercel.json and api/) to your repository so Vercel provisions the API serverless function.'}
                     </p>
                 )}
                 <div className="pt-2">

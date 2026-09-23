@@ -19,11 +19,28 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
         headers,
     });
 
+    let rawText = '';
     let data: any;
     try {
-        data = await response.json();
+        rawText = await response.text();
+        data = JSON.parse(rawText);
     } catch {
-        throw new Error(`Server returned ${response.status} ${response.statusText}`);
+        // If not JSON, extract any plain-text snippet (up to 120 chars, stripping HTML tags)
+        const snippet = rawText
+            ? rawText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120)
+            : '';
+        if (response.status === 500) {
+            throw new Error(
+                snippet
+                    ? `Server Error (500): ${snippet}`
+                    : `Server returned 500. Check database connection or server logs.`
+            );
+        }
+        throw new Error(
+            snippet
+                ? `Server Error (${response.status}): ${snippet}`
+                : `Server returned ${response.status} ${response.statusText || ''}`.trim()
+        );
     }
 
     if (!data.success) {
