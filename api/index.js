@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// api/index.ts
+// backend/src/serverless.ts
 import "dotenv/config";
 import express2 from "express";
 import cors from "cors";
@@ -1085,14 +1085,14 @@ appRouter.post("/poems/:id/replies", createReply);
 appRouter.patch("/replies/:id", updateReply);
 appRouter.delete("/replies/:id", deleteReply);
 
-// api/index.ts
+// backend/src/serverless.ts
 var app = express2();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express2.json());
 app.use(cookieParser());
 app.use("/api", appRouter);
 app.use(appRouter);
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: { message: `API endpoint not found: ${req.method} ${req.originalUrl || req.url}` }
@@ -1109,7 +1109,7 @@ app.use((err, _req, res, _next) => {
     });
   }
 });
-var index_default = app;
+var serverless_default = app;
 export {
-  index_default as default
+  serverless_default as default
 };
