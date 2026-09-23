@@ -59,15 +59,15 @@ export default function Home() {
                 {isDbError && (
                     <p className="text-xs text-[#8B8476] leading-relaxed bg-amber-50/70 border border-amber-200/60 p-3 rounded-lg text-left">
                         {language === 'am'
-                            ? 'ማሳሰቢያ፡ በምርት (Production/Cloud Run) ላይ DATABASE_URL በትክክል መዋቀሩን ያረጋግጡ።'
-                            : 'Note: Ensure that DATABASE_URL is set in your Cloud Run or production environment settings.'}
+                            ? 'ማሳሰቢያ፡ በምርት (Vercel ወይም Cloud Run) ላይ DATABASE_URL በትክክል መዋቀሩን ያረጋግጡ።'
+                            : 'Note: Ensure that DATABASE_URL is set in your Vercel Project Settings > Environment Variables (or Cloud Run).'}
                     </p>
                 )}
                 {is404 && (
                     <p className="text-xs text-[#8B8476] leading-relaxed bg-blue-50/70 border border-blue-200/60 p-3 rounded-lg text-left">
                         {language === 'am'
-                            ? 'ማሳሰቢያ፡ አዲሱን የሰርቨር ማሻሻያ ወደ ምርት ለመላክ እባክዎ "Share" ወይም "Deploy" የሚለውን እንደገና ይጫኑ።'
-                            : 'Note: Please redeploy or create a new share link so the latest server build takes effect in production.'}
+                            ? 'ማሳሰቢያ፡ በVercel ላይ ከተጠቀሙ አዲሱን ኮድ (vercel.json እና api/index.ts) ወደ ጊትሃብ ፑሽ አድርገው በድጋሚ ይላኩ።'
+                            : 'Note: If deployed on Vercel, push the latest changes (including vercel.json and api/index.ts) to your repository so Vercel provisions the API serverless function.'}
                     </p>
                 )}
                 <div className="pt-2">
