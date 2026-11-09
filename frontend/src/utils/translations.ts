@@ -10,6 +10,12 @@ export const translations = {
         login: "Login",
         logout: "Logout",
         hello: "Hello",
+        menu: "Menu",
+        explore: "Explore",
+        account: "Account",
+        close: "Close",
+        formalPoems: "Poems",
+        filterByCategory: "Filter by Category",
         
         // Home
         formalPoemsTitle: "Poetry Collection",
@@ -76,6 +82,12 @@ export const translations = {
         login: "ግባ",
         logout: "ውጣ",
         hello: "ሰላም",
+        menu: "ምናሌ",
+        explore: "አስስ",
+        account: "መለያ",
+        close: "ዝጋ",
+        formalPoems: "ግጥሞች",
+        filterByCategory: "በምድብ ምረጥ",
         
         // Home
         formalPoemsTitle: "የግጥም መድብል",
