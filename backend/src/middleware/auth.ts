@@ -29,18 +29,8 @@ export const authenticateUser = (req: Request, res: Response, next: NextFunction
             req.user = decoded;
             return next();
         } catch (err) {
-            // invalid token, continue to fallback checks
+            // invalid token - leave req.user undefined
         }
-    }
-    
-    // In dev mode or preview, if x-admin-dev is passed or no user is logged in, ensure admin operations can proceed
-    const isDevPreview = process.env.NODE_ENV !== 'production' || req.headers['x-admin-dev'] === 'true';
-    if (!req.user && isDevPreview && (req.headers['x-admin-dev'] === 'true' || req.path.startsWith('/admin'))) {
-        req.user = {
-            id: '7435f565-9e14-4bd8-a635-06f321577902',
-            username: 'admin',
-            role: 'admin'
-        };
     }
     
     next();

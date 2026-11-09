@@ -1041,14 +1041,6 @@ var authenticateUser = (req, res, next) => {
     } catch (err) {
     }
   }
-  const isDevPreview = process.env.NODE_ENV !== "production" || req.headers["x-admin-dev"] === "true";
-  if (!req.user && isDevPreview && (req.headers["x-admin-dev"] === "true" || req.path.startsWith("/admin"))) {
-    req.user = {
-      id: "7435f565-9e14-4bd8-a635-06f321577902",
-      username: "admin",
-      role: "admin"
-    };
-  }
   next();
 };
 

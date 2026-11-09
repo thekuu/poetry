@@ -20,9 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const headers: Record<string, string> = {
-            'x-admin-dev': 'true'
-        };
+        const headers: Record<string, string> = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
@@ -36,22 +34,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (data.success && data.user) {
                     setUser(data.user);
                 } else {
-                    // Default preview admin so user is never locked out of testing admin features in AI Studio preview
-                    const devUser: User = {
-                        id: '7435f565-9e14-4bd8-a635-06f321577902',
-                        username: 'admin',
-                        role: 'admin'
-                    };
-                    setUser(devUser);
+                    setUser(null);
                 }
             })
             .catch(() => {
-                const devUser: User = {
-                    id: '7435f565-9e14-4bd8-a635-06f321577902',
-                    username: 'admin',
-                    role: 'admin'
-                };
-                setUser(devUser);
+                setUser(null);
             })
             .finally(() => setIsLoading(false));
     }, []);
